@@ -105,15 +105,31 @@ module DataPlaneApi
 
     private
 
-    # @return [Faraday::Connection]
-    def build_connection
-      headers = { 'Content-Type' => 'application/json' }
+    if ::Faraday::VERSION > '2'
+      # @return [Faraday::Connection]
+      def build_connection
+        headers = { 'Content-Type' => 'application/json' }
 
-      ::Faraday.new(url: "#{url}/v2/", headers: headers) do |f|
-        f.request :json
-        f.response :json
-        f.request :authorization, :basic, basic_user, basic_password
+        ::Faraday.new(url: "#{url}/v2/", headers: headers) do |f|
+          f.request :json
+          f.response :json
+          f.request :authorization, :basic, basic_user, basic_password
+        end
+      end
+    else
+      # Faraday 1.x compatibility
+
+      # @return [Faraday::Connection]
+      def build_connection
+        headers = { 'Content-Type' => 'application/json' }
+
+        ::Faraday.new(url: "#{url}/v2/", headers: headers) do |f|
+          f.request :json
+          f.response :json
+          f.request :basic_auth, basic_user, basic_password
+        end
       end
     end
+
   end
 end

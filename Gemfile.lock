@@ -1,8 +1,8 @@
 PATH
   remote: .
   specs:
-    data_plane_api (0.1.0)
-      faraday (~> 2.7)
+    data_plane_api (0.1.1)
+      faraday (> 1, < 3)
 
 GEM
   remote: https://rubygems.org/

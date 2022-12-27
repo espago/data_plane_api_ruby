@@ -30,7 +30,7 @@ require_relative 'lib/data_plane_api/version'
   spec.require_paths = ['lib']
 
   # Uncomment to register a new dependency of your gem
-  spec.add_dependency 'faraday', '~> 2.7'
+  spec.add_dependency 'faraday', '> 1', '< 3'
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html
