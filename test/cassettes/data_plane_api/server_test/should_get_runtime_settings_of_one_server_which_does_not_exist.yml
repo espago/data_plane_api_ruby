@@ -1,0 +1,39 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: http://example.com/v2/services/haproxy/runtime/servers/lolo?backend=foo_bar
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - Faraday v2.7.2
+      Authorization:
+      - Basic Mjg3OWZ5dGRzZ2ZoandkZjpwaXFvZXd5Z3RmMDkyNDM3cg==
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 500
+      message: Internal Server Error
+    headers:
+      Content-Type:
+      - application/json
+      Vary:
+      - Origin
+      Date:
+      - Tue, 27 Dec 2022 00:21:41 GMT
+      Content-Length:
+      - '66'
+    body:
+      encoding: UTF-8
+      string: '{"code":500,"message":"no data for foo_bar/lolo: not found"}
+
+        '
+  recorded_at: Tue, 27 Dec 2022 00:22:28 GMT
+recorded_with: VCR 6.1.0
