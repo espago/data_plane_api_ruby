@@ -43,6 +43,7 @@ module DataPlaneApi
       @logger = logger
       @timeout = timeout
       @parent = parent
+      @connection = nil
 
       return unless global
 
