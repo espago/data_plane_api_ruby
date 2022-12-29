@@ -1,10 +1,17 @@
 # DataPlaneApi Ruby
 
-This gem provides a simple interface for the Community Edition of the HAProxy DataPlane API.
+This gem provides a simple interface for the Community Edition of
+the HAProxy Data Plane API.
+
 Currently, it only supports a handful of requests that we needed.
 More may be added in the future.
 
 We encourage you to make Pull Requests with more API endpoints.
+
+[HAProxy](https://www.haproxy.com/) is a load balancer.
+The [Data Plane API](https://www.haproxy.com/documentation/dataplaneapi/community/)
+can be used to manage your HAProxy config,
+backends and servers.
 
 ## Installation
 
