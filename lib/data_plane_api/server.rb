@@ -1,23 +1,20 @@
+# typed: true
 # frozen_string_literal: true
 
 require 'json'
-require 'set'
 
 module DataPlaneApi
   # Wraps endpoints regarding HAProxy servers.
   module Server
-    # @return [Set<Symbol>]
-    ADMIN_STATES = ::Set[:ready, :maint, :drain]
-    # @return [Set<Symbol>]
-    OPERATIONAL_STATES = ::Set[:up, :down, :stopping]
+    ADMIN_STATES = T.let(::Set[:ready, :maint, :drain], T::Set[Symbol])
+    OPERATIONAL_STATES = T.let(::Set[:up, :down, :stopping], T::Set[Symbol])
 
     class << self
-      # @param backend [String] Name of the backend
-      # @param name [String, nil] Name of the server whose settings will be returned.
+      # @param backend: Name of the backend
+      # @param name: Name of the server whose settings will be returned.
       #   If `nil` then an array of settings of all servers under the passed `backend`
       #   will be returned.
-      # @param config [HaProxy::DataPlaneApi::Configuration, nil]
-      # @return [Faraday::Response]
+      #: (String?, String?, Configuration?) -> Faraday::Response
       def get_runtime_settings(backend:, name: nil, config: nil)
         config ||= CONFIG
         if backend.nil? || backend.empty?
@@ -31,11 +28,9 @@ module DataPlaneApi
         end
       end
 
-      # @param backend [String] Name of the backend
-      # @param name [String, nil] Name of the server whose transient settings should be updated.
-      # @param settings [Hash]
-      # @param config [HaProxy::DataPlaneApi::Configuration, nil]
-      # @return [Faraday::Response]
+      # @param backend: Name of the backend
+      # @param name: Name of the server whose transient settings should be updated.
+      #: (String?, String?, Hash[top, top], Configuration?) -> Faraday::Response
       def update_transient_settings(backend:, name:, settings:, config: nil)
         config ||= CONFIG
         if backend.nil? || backend.empty?
@@ -53,43 +48,36 @@ module DataPlaneApi
 
       private
 
-      # @param method [Symbol]
-      # @param path [String, Pathname]
-      # @param config [HaProxy::DataPlaneApi::Configuration]
-      # @yieldparam request [Faraday::Request]
-      # @return [Faraday::Response]
+      #: (Symbol, String | Pathname, Configuration) { (Faraday::Request) -> void } -> Faraday::Response
       def send_request(method:, path:, config:, &block)
-        request = nil
+        request = T.let(nil, T.nilable(Faraday::Request))
         response = config.connection.public_send(method, path) do |req|
           block.call(req)
           req.options.timeout = config.timeout
           request = req
         end
 
-        log_communication(request, response, logger: config.logger)
+        log_communication(T.must(request), response, logger: config.logger)
 
         response
       end
 
-      # @param request [Faraday::Request]
-      # @param response [Faraday::Response]
-      # @param logger [Logger]
-      # @return [void]
+      #: (Faraday::Request, Faraday::Response, Logger?) -> void
       def log_communication(request, response, logger:)
         request_hash = {
-          method: request.http_method,
-          url: response.env.url,
-          params: request.params,
+          method:  request.http_method,
+          url:     response.env.url,
+          params:  request.params,
           headers: request.headers,
-          body: request.body
+          body:    request.body,
         }
         response_hash = {
-          status: response.status,
-          body: response.body,
-          headers: response.headers
+          status:  response.status,
+          body:    response.body,
+          headers: response.headers,
         }
 
-        logger.debug <<~REQ
+        logger&.debug <<~REQ
           HAProxy #{request.http_method.to_s.upcase} #{response.env.url}
           -----REQUEST-----
           #{::JSON.pretty_generate request_hash}

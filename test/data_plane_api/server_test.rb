@@ -1,3 +1,4 @@
+# typed: true
 # frozen_string_literal: true
 
 require 'test_helper'
@@ -83,10 +84,10 @@ module DataPlaneApi
 
         response =
           Server.update_transient_settings(
-            backend: 'foo_bar',
-            name: 'foo_bar1',
+            backend:  'foo_bar',
+            name:     'foo_bar1',
             settings: { admin_state: :drain },
-            config: config
+            config:   config,
           )
 
         assert_equal 200, response.status
@@ -105,9 +106,9 @@ module DataPlaneApi
 
     def config
       Configuration.new(
-        url: 'http://example.com',
-        basic_user: '2879fytdsgfhjwdf',
-        basic_password: 'piqoewygtf092437r'
+        url:            'http://example.com',
+        basic_user:     '2879fytdsgfhjwdf',
+        basic_password: 'piqoewygtf092437r',
       )
     end
   end

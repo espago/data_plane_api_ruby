@@ -12,7 +12,7 @@ require_relative 'lib/data_plane_api/version'
   spec.description = 'Ruby gem which covers a limited subset of the HAProxy Data Plane API.'
   spec.homepage = 'https://github.com/espago/data_plane_api_ruby'
   spec.license = 'MIT'
-  spec.required_ruby_version = '>= 2.7.0'
+  spec.required_ruby_version = '>= 3.2.0'
 
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['source_code_uri'] = 'https://github.com/espago/data_plane_api_ruby'
@@ -30,7 +30,9 @@ require_relative 'lib/data_plane_api/version'
   spec.require_paths = ['lib']
 
   # Uncomment to register a new dependency of your gem
+  spec.add_dependency 'booleans', '~> 0.1.3'
   spec.add_dependency 'faraday', '> 1', '< 3'
+  spec.add_dependency 'sorbet-runtime', '~> 0.5'
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html

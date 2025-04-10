@@ -1,3 +1,4 @@
+# typed: true
 # frozen_string_literal: true
 
 require 'test_helper'
@@ -12,7 +13,7 @@ module DataPlaneApi
         assert !conf.logger.nil?
         assert conf.logger.is_a?(::Logger)
         assert conf.logger.equal?(conf.instance_variable_get(:@logger))
-        assert_equal ::Logger::DEBUG, conf.logger.level
+        assert_equal ::Logger::DEBUG, conf.logger&.level
 
         assert_equal 10, conf.timeout
         assert conf.timeout.equal?(conf.instance_variable_get(:@timeout))

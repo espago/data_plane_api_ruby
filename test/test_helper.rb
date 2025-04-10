@@ -5,6 +5,7 @@ require 'data_plane_api'
 
 require 'minitest/autorun'
 require 'shoulda-context'
+require 'byebug'
 
 require 'vcr'
 
