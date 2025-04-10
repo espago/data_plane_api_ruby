@@ -14,7 +14,7 @@ module DataPlaneApi
       # @param name: Name of the server whose settings will be returned.
       #   If `nil` then an array of settings of all servers under the passed `backend`
       #   will be returned.
-      #: (String?, String?, Configuration?) -> Faraday::Response
+      #: (String?, String?, Configuration?) -> Faraday::Response?
       def get_runtime_settings(backend:, name: nil, config: nil)
         config ||= CONFIG
         if backend.nil? || backend.empty?
@@ -30,7 +30,7 @@ module DataPlaneApi
 
       # @param backend: Name of the backend
       # @param name: Name of the server whose transient settings should be updated.
-      #: (String?, String?, Hash[top, top], Configuration?) -> Faraday::Response
+      #: (String?, String?, Hash[top, top], Configuration?) -> Faraday::Response?
       def update_transient_settings(backend:, name:, settings:, config: nil)
         config ||= CONFIG
         if backend.nil? || backend.empty?
@@ -48,37 +48,44 @@ module DataPlaneApi
 
       private
 
-      #: (Symbol, String | Pathname, Configuration) { (Faraday::Request) -> void } -> Faraday::Response
+      #: (Symbol, String | Pathname, Configuration) { (Faraday::Request) -> void } -> Faraday::Response?
       def send_request(method:, path:, config:, &block)
         request = T.let(nil, T.nilable(Faraday::Request))
-        response = config.connection.public_send(method, path) do |req|
+        conn = config.connection
+        response = conn.public_send(method, path) do |req|
           block.call(req)
           req.options.timeout = config.timeout
           request = req
+          break if config.mock?
         end
 
-        log_communication(T.must(request), response, logger: config.logger)
+        log_communication(
+          conn.build_url(path),
+          T.must(request),
+          response,
+          logger: config.logger,
+        )
 
         response
       end
 
-      #: (Faraday::Request, Faraday::Response, Logger?) -> void
-      def log_communication(request, response, logger:)
+      #: (String, Faraday::Request, Faraday::Response?, Logger?) -> void
+      def log_communication(url, request, response, logger:)
         request_hash = {
           method:  request.http_method,
-          url:     response.env.url,
+          url:     url,
           params:  request.params,
           headers: request.headers,
           body:    request.body,
         }
         response_hash = {
-          status:  response.status,
-          body:    response.body,
-          headers: response.headers,
+          status:  response&.status,
+          body:    response&.body,
+          headers: response&.headers,
         }
 
         logger&.debug <<~REQ
-          HAProxy #{request.http_method.to_s.upcase} #{response.env.url}
+          HAProxy #{request.http_method.to_s.upcase} #{url}
           -----REQUEST-----
           #{::JSON.pretty_generate request_hash}
           -----RESPONSE-----

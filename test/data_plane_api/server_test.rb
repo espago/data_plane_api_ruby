@@ -5,10 +5,22 @@ require 'test_helper'
 
 module DataPlaneApi
   class ServerTest < ::TestCase
-    should 'get runtime settings of all servers when backend does not exist' do
-      response = http_cassette do
-        Server.get_runtime_settings(backend: 'lolo', config: config)
+    should 'not send the request in mock mode' do
+      conf = config.tap do |c|
+        c.mock = true
       end
+
+      response =
+        Server.get_runtime_settings(backend: 'lolo', config: conf)
+
+      assert_nil response
+    end
+
+    should 'get runtime settings of all servers when backend does not exist' do
+      response = T.must(http_cassette do
+        Server.get_runtime_settings(backend: 'lolo', config: config)
+      end)
+
 
       assert_equal 200, response.status
       assert response.body.is_a?(::Array)
@@ -16,9 +28,9 @@ module DataPlaneApi
     end
 
     should 'get runtime settings of all servers' do
-      response = http_cassette do
+      response = T.must(http_cassette do
         Server.get_runtime_settings(backend: 'foo_bar', config: config)
-      end
+      end)
 
       assert_equal 200, response.status
       assert response.body.is_a?(::Array)
@@ -40,9 +52,9 @@ module DataPlaneApi
     end
 
     should 'get runtime settings of one server' do
-      response = http_cassette do
+      response = T.must(http_cassette do
         Server.get_runtime_settings(backend: 'foo_bar', name: 'foo_bar1', config: config)
-      end
+      end)
 
       assert_equal 200, response.status
       assert response.body.is_a?(::Hash)
@@ -56,9 +68,9 @@ module DataPlaneApi
     end
 
     should 'get runtime settings of one server which does not exist' do
-      response = http_cassette do
+      response = T.must(http_cassette do
         Server.get_runtime_settings(backend: 'foo_bar', name: 'lolo', config: config)
-      end
+      end)
 
       assert_equal 500, response.status
       assert response.body.is_a?(::Hash)
@@ -70,7 +82,7 @@ module DataPlaneApi
 
     should 'update admin_state of a server' do
       http_cassette do
-        response = Server.get_runtime_settings(backend: 'foo_bar', name: 'foo_bar1', config: config)
+        response = T.must Server.get_runtime_settings(backend: 'foo_bar', name: 'foo_bar1', config: config)
 
         assert_equal 200, response.status
         assert response.body.is_a?(::Hash)
@@ -82,13 +94,14 @@ module DataPlaneApi
         assert_equal '12.0.5.102', server['address']
         assert_equal 4512, server['port']
 
-        response =
+        response = T.must(
           Server.update_transient_settings(
             backend:  'foo_bar',
             name:     'foo_bar1',
             settings: { admin_state: :drain },
             config:   config,
-          )
+          ),
+        )
 
         assert_equal 200, response.status
         assert response.body.is_a?(::Hash)
@@ -104,6 +117,7 @@ module DataPlaneApi
 
     private
 
+    #: -> Configuration
     def config
       Configuration.new(
         url:            'http://example.com',

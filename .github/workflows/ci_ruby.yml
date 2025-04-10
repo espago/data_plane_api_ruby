@@ -31,3 +31,19 @@ jobs:
           bundler-cache: true # runs 'bundle install' and caches installed gems automatically
       - name: Run unit tests
         run: bundle exec rake test
+  typecheck_and_lint:
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Install Ruby and gems
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4'
+          bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+      - name: Lint
+        run: bundle exec rubocop --parallel --color
+      - name: Typecheck
+        run: bundle exec srb tc

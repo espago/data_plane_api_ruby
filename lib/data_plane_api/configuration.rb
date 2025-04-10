@@ -1,6 +1,7 @@
 # typed: true
 # frozen_string_literal: true
 
+require 'booleans/kernel_extension'
 require 'faraday'
 require 'logger'
 
