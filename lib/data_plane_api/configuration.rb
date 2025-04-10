@@ -1,34 +1,42 @@
+# typed: true
 # frozen_string_literal: true
 
+require 'booleans/kernel_extension'
 require 'faraday'
 require 'logger'
 
 module DataPlaneApi
   # Stores configuration options for the HAProxy Data Plane API.
   class Configuration
-    # @return [String, URI::Generic, nil]
+    #: String | URI::Generic | nil
     attr_writer :url
-    # @return [String, nil] Basic Auth username.
+    # Basic Auth username.
+    #: String?
     attr_writer :basic_user
-    # @return [String, nil] Basic Auth password.
+    # Basic Auth password.
+    #: String?
     attr_writer :basic_password
-    # @return [Logger, nil]
+    #: Logger?
     attr_writer :logger
-    # @return [Integer, nil]
+    #: Integer?
     attr_writer :timeout
-    # @return [Boolean] whether this object is used as a global store of settings
+    # Do not make HTTP requests, just log them
+    #
+    #: bool
+    attr_writer :mock
+    # Whether this object is used as a global store of settings
+    #
+    #: bool
     attr_reader :global
 
-    # @param url [String, nil]
-    # @param global [Boolean] whether this object is used as a global store of settings
-    # @param basic_user [String, nil] Basic Auth username.
-    # @param basic_password [String, nil] Basic Auth password.
-    # @param logger [Logger, nil]
-    # @param timeout [Integer, nil]
-    # @param parent [self, nil]
+    # @param global: whether this object is used as a global store of settings
+    # @param basic_user: Basic Auth username.
+    # @param basic_password: Basic Auth password.
+    #: (String | URI::Generic | nil, bool, bool, String?, String?, Logger?, Integer?, Configuration?) -> void
     def initialize(
       url: nil,
       global: false,
+      mock: false,
       basic_user: nil,
       basic_password: nil,
       logger: nil,
@@ -37,6 +45,7 @@ module DataPlaneApi
     )
 
       @global = global
+      @mock = mock
       @url = url
       @basic_user = basic_user
       @basic_password = basic_password
@@ -51,53 +60,67 @@ module DataPlaneApi
       @timeout ||= 10
     end
 
-    # @return [Faraday::Connection]
+    #: -> Faraday::Connection
     def connection
       @connection || build_connection
     end
 
-    # @return [void]
+    #: -> void
     def freeze
       @connection = build_connection
       super
     end
 
-    # @return [String, URI::Generic, nil]
+    #: -> (String | URI::Generic | nil)
     def url
       return @url if @global || @url
 
-      parent.url
+      parent&.url
     end
 
-    # @return [String, nil] Basic Auth username.
+    # Basic Auth username.
+    #: -> String?
     def basic_user
       return @basic_user if @global || @basic_user
 
-      parent.basic_user
+      parent&.basic_user
     end
 
-    # @return [String, nil] Basic Auth password.
+    # Basic Auth password.
+    #: -> String?
     def basic_password
       return @basic_password if @global || @basic_password
 
-      parent.basic_password
+      parent&.basic_password
     end
 
-    # @return [Logger, nil]
+    #: -> Logger?
     def logger
       return @logger if @global || @logger
 
-      parent.logger
+      parent&.logger
     end
 
-    # @return [Integer, nil]
+    #: -> Integer?
     def timeout
       return @timeout if @global || @timeout
 
-      parent.timeout
+      parent&.timeout
     end
 
-    # @return [self, nil]
+    #: -> bool?
+    def mock
+      return @mock if @global || @mock
+
+      parent&.mock
+    end
+
+    #: -> bool
+    def mock?
+      Boolean(mock)
+    end
+
+    #: -> Configuration?
     def parent
       return if @global
 
@@ -107,7 +130,7 @@ module DataPlaneApi
     private
 
     if ::Faraday::VERSION > '2'
-      # @return [Faraday::Connection]
+      #: -> Faraday::Connection
       def build_connection
         headers = { 'Content-Type' => 'application/json' }
 
@@ -120,7 +143,7 @@ module DataPlaneApi
     else
       # Faraday 1.x compatibility
 
-      # @return [Faraday::Connection]
+      #: -> Faraday::Connection
       def build_connection
         headers = { 'Content-Type' => 'application/json' }
 

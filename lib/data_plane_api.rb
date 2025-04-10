@@ -1,5 +1,7 @@
+# typed: true
 # frozen_string_literal: true
 
+require 'sorbet-runtime'
 require_relative 'data_plane_api/version'
 require_relative 'data_plane_api/configuration'
 
@@ -8,12 +10,10 @@ require_relative 'data_plane_api/configuration'
 module DataPlaneApi
   class Error < ::StandardError; end
 
-  # @return [DataPlaneAPI]
   CONFIG = Configuration.new(global: true)
 
   class << self
-    # @yieldparam config [Configuration]
-    # @return [Configuration]
+    #: { (Configuration) -> void } -> Configuration
     def configure(&block)
       block.call(CONFIG)
       CONFIG
